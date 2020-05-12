@@ -1,6 +1,6 @@
 ---
 # EXPERIMENTAL PARAMETERS
-COLLECT_LOGS : True
+COLLECT_LOGS : False
 COLLECT_TRAINING_DATA : False
 USE_INFERENCE_SERVER : True
 RISK_MODEL : "transformer" # "naive"  "manual", "digital", "transformer"
