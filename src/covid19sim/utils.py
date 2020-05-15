@@ -1595,6 +1595,7 @@ def extract_tracker_data(tracker, ExpConfig):
     data['rec_feelings'] = tracker.rec_feelings
     data['outside_daily_contacts'] = tracker.outside_daily_contacts
     data['test_monitor'] = tracker.test_monitor
+    data['mobility_during_infection'] = tracker.mobility_during_infection
     # data['dist_encounters'] = dict(tracker.dist_encounters)
     # data['time_encounters'] = dict(tracker.time_encounters)
     # data['day_encounters'] = dict(tracker.day_encounters)
