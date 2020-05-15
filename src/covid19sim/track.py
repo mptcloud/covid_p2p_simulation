@@ -1,6 +1,6 @@
-
 """
-[summary]
+Contains a class to track several simulation metrics.
+It is initialized as an attribute of the city and called at several places in `Human`.
 """
 import pandas as pd
 import numpy as np
@@ -131,6 +131,7 @@ class Tracker(object):
         self.feelings = [F]
         self.rec_feelings = []
         self.outside_daily_contacts = []
+        self.mobility_during_infection = defaultdict(list)
 
         # risk models
         self.risk_precision_daily = [self.compute_risk_precision()]
@@ -268,6 +269,11 @@ class Tracker(object):
         self.feelings.append(F)
         self.rec_feelings.extend([(h.rec_level, h.how_am_I_feeling()) for h in self.city.humans])
         self.outside_daily_contacts.append(self.n_outside_daily_contacts/len(self.city.humans))
+        for h in self.city.humans:
+            if h.is_infectious or h.is_exposed:
+                yesterday = self.env.timestamp.date() - datetime.timedelta(days=1)
+                n_contacts = [(x,y[-1][1]) for x,y in h.contact_book.book.items() if y[-1][0] == yesterday]
+                self.mobility_during_infection[h.name].append((sum(x[1] for x in n_contacts), yesterday.weekday() >= 5))
 
         # risk models
         prec, lift, recall = self.compute_risk_precision(daily=True)
@@ -689,7 +695,7 @@ class Tracker(object):
 
             # per age bin
             for bin in self.age_bins:
-                n, avg, last_day_count  = self.daily_age_group_encounters[bin]
+                n, avg, last_day_count = self.daily_age_group_encounters[bin]
                 self.daily_age_group_encounters[bin] = [n+1, (avg * n + last_day_count)/(n+1), 0]
 
             self.last_encounter_day = day
@@ -708,10 +714,11 @@ class Tracker(object):
 
     def write_metrics(self, logfile):
         """
-        [summary]
+        Writes various metrics to logfile.
+        Prints them if logfile is None.
 
         Args:
-            logfile ([type]): [description]
+            logfile ([str]): filename where these logs will be dumped
         """
         log("######## DEMOGRAPHICS #########", logfile)
         log(f"age distribution\n {self.age_distribution.describe()}", logfile)

@@ -3,6 +3,8 @@ Main file to run the simulations
 """
 import click
 import os
+import pathlib
+import dill
 
 from covid19sim.frozen.helper import SYMPTOMS_META, SYMPTOMS_META_IDMAP
 from covid19sim.simulator import Human
@@ -10,6 +12,7 @@ from covid19sim.base import *
 from covid19sim.monitors import EventMonitor, TimeMonitor, SEIRMonitor
 from covid19sim.configs.exp_config import ExpConfig
 from covid19sim.configs.constants import TICK_MINUTE
+from covid19sim.utils import extract_tracker_data, dump_tracker_data
 
 
 @click.command()
@@ -23,12 +26,14 @@ from covid19sim.configs.constants import TICK_MINUTE
 @click.option('--port', help='which port should we look for inference servers on', type=int, default=6688)
 @click.option('--config', help='where is the configuration file for this experiment', type=str, default="configs/naive_config.yml")
 @click.option('--tune', help='track additional specific metrics to plot and explore', is_flag=True, default=False)
+@click.option('--name', help='name to append at the end of tracker data', type=str, default="")
 def main(n_people=None,
         init_percent_sick=0.01,
         start_time=datetime.datetime(2020, 2, 28, 0, 0),
         simulation_days=30,
         outdir=None, out_chunk_size=None,
-        seed=0, n_jobs=1, port=6688, config="configs/naive_config.yml", tune=False):
+        seed=0, n_jobs=1, port=6688, config="configs/naive_config.yml",
+        tune=False, name=""):
     """
     [summary]
 
@@ -43,21 +48,25 @@ def main(n_people=None,
         n_jobs (int, optional): [description]. Defaults to 1.
         port (int, optional): [description]. Defaults to 6688.
         config (str, optional): [description]. Defaults to "configs/naive_config.yml".
+        tune (bool, optional): Do the minimal thing. Run the simulator and dumpt the `Track` in the file ending in `name`
+        name (str, optional): name to append at the end of the `Track` data.
     """
 
     # Load the experimental configuration
     ExpConfig.load_config(config)
     if outdir is None:
         outdir = "output"
-    os.makedirs(f"{outdir}", exist_ok=True)
-    outdir = f"{outdir}/sim_v2_people-{n_people}_days-{simulation_days}_init-{init_percent_sick}_seed-{seed}_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
-    os.makedirs(outdir)
-    outfile = os.path.join(outdir, "data")
 
     if tune:
         import warnings
         warnings.filterwarnings("ignore")
         outfile = None
+    else:
+        os.makedirs(f"{outdir}", exist_ok=True)
+        outdir = f"{outdir}/sim_v2_people-{n_people}_days-{simulation_days}_init-{init_percent_sick}_seed-{seed}_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
+        os.makedirs(outdir)
+        outfile = os.path.join(outdir, "data")
+
 
     monitors, tracker = simulate(
         n_people=n_people,
@@ -69,17 +78,21 @@ def main(n_people=None,
         seed=seed, n_jobs=n_jobs, port=port
     )
 
-    if not tune:
+    if tune:
+        timenow = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        filename = f"tracker_data_n_{n_people}_seed_{seed}_{timenow}_{name}.pkl"
+        data = extract_tracker_data(tracker, ExpConfig)
+
+        outdir = pathlib.Path("tune")
+        outdir.mkdir(exist_ok=True, parents=True)
+        with open(outdir / filename, 'wb') as f:
+            dill.dump(data, f)
+    else:
         monitors[0].dump()
         monitors[0].join_iothread()
         # write metrics
         logfile = os.path.join(f"{outdir}/logs.txt")
         tracker.write_metrics(logfile)
-    else:
-        filename = f"tracker_data_n_{n_people}_seed_{seed}_{timenow}_{name}.pkl"
-        data = extract_tracker_data(tracker, ExpConfig)
-        dump_tracker_data(data, outdir, filename)
-
 
 def simulate(n_people=None,
              init_percent_sick=0.01,
