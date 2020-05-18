@@ -1,5 +1,5 @@
 """
-[summary]
+(Configuration) Parameters used in the simulator. 
 """
 
 # NOISE IN SIM PARAMETERS
@@ -315,7 +315,7 @@ MIN_DIST_ENCOUNTER = 20
 MAX_DIST_ENCOUNTER = 200
 
 # KNOBS
-CONTAGION_KNOB = 1.85
+CONTAGION_KNOB = 1.85 # lower, more infections
 ENVIRONMENTAL_INFECTION_KNOB = 0.0005
 GREEN_FEELING_KNOB = 1.
 

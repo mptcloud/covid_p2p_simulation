@@ -1,5 +1,5 @@
 """
-[summary]
+Contains the `Human` class that defines the behavior of human.
 """
 
 import math
@@ -1309,15 +1309,15 @@ class Human(object):
                 if INFECTION_DISTANCE_FACTOR or INFECTION_DURATION_FACTOR:
                     proximity_factor = INFECTION_DISTANCE_FACTOR * (1 - distance/INFECTION_RADIUS) + INFECTION_DURATION_FACTOR * min((t_near - INFECTION_DURATION)/INFECTION_DURATION, 1)
                 mask_efficacy = (self.mask_efficacy + h.mask_efficacy)*2
-                
+
                 # used for matching "mobility" between methods
                 scale_factor_passed = self.rng.random() < ExpConfig.get("M")
-                cur_day = (self.env.timestamp - self.env.initial_timestamp).days 
+                cur_day = (self.env.timestamp - self.env.initial_timestamp).days
                 if cur_day > ExpConfig.get("INTERVENTION_DAY"):
                     self.num_contacts += 1
                     self.effective_contacts += ExpConfig.get("M")
 
-                #if cur_day >5:  
+                #if cur_day >5:
                 infector, infectee = None, None
 
                 if (self.is_infectious ^ h.is_infectious) and scale_factor_passed:

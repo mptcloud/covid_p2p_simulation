@@ -30,9 +30,10 @@ def main(n_people=None,
         start_time=datetime.datetime(2020, 2, 28, 0, 0),
         simulation_days=30,
         outdir=None, out_chunk_size=None,
-        seed=0, n_jobs=1, port=6688, config="configs/naive_config.yml", name="", tune=False):
+        seed=0, n_jobs=1, port=6688, config="configs/no_intervention.yml",
+        tune=False, name=""):
     """
-    [summary]
+    Enables command line execution of the simulator.
 
     Args:
         n_people ([type], optional): [description]. Defaults to None.
@@ -45,21 +46,25 @@ def main(n_people=None,
         n_jobs (int, optional): [description]. Defaults to 1.
         port (int, optional): [description]. Defaults to 6688.
         config (str, optional): [description]. Defaults to "configs/naive_config.yml".
+        tune (bool, optional): Do the minimal thing. Run the simulator and dumpt the `Track` in the file ending in `name`.
+        name (str, optional): name to append at the end of the `Track` data.
+
     """
 
     # Load the experimental configuration
     ExpConfig.load_config(config)
     if outdir is None:
         outdir = "output"
-    os.makedirs(f"{outdir}", exist_ok=True)
-    outdir = f"{outdir}/sim_v2_people-{n_people}_days-{simulation_days}_init-{init_percent_sick}_seed-{seed}_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
-    os.makedirs(outdir)
-    outfile = os.path.join(outdir, "data")
 
     if tune:
         import warnings
         warnings.filterwarnings("ignore")
         outfile = None
+    else:
+        os.makedirs(f"{outdir}", exist_ok=True)
+        outdir = f"{outdir}/sim_v2_people-{n_people}_days-{simulation_days}_init-{init_percent_sick}_seed-{seed}_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
+        os.makedirs(outdir)
+        outfile = os.path.join(outdir, "data")
 
     city, monitors, tracker = simulate(
         n_people=n_people,
@@ -79,7 +84,7 @@ def main(n_people=None,
     print(f"all_effective_contacts: {all_effective_contacts}")
     print(f"all_effective_contacts/(sim days * len(city.humans)): {all_effective_contacts / (simulation_days * len(city.humans))}")
     print(f"effective contacts per contacs (M): {all_effective_contacts / all_contacts}")
-    
+
     if not tune:
         monitors[0].dump()
         monitors[0].join_iothread()
@@ -90,6 +95,7 @@ def main(n_people=None,
         import sys
         sys.path.append("../../plots")
         from plot_rt import PlotRt
+
         cases_per_day = tracker.cases_per_day
         if tracker.get_generation_time() > 0:
             serial_interval = tracker.get_generation_time()
@@ -101,9 +107,15 @@ def main(n_people=None,
         most_likely, _ = plotrt.compute(cases_per_day, r0_estimate=2.5)
         print("Rt", most_likely[:20])
 
+        timenow = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
         filename = f"tracker_data_n_{n_people}_seed_{seed}_{timenow}_{name}.pkl"
+        with open(f"{outdir}/{filename}", 'wb') as f:
         data = extract_tracker_data(tracker, ExpConfig)
-        dump_tracker_data(data, outdir, filename)
+
+        outdir = pathlib.Path("tune")
+        outdir.mkdir(exist_ok=True, parents=True)
+        with open(outdir / filename, 'wb') as f:
+            dill.dump(data, f)
 
 
 def simulate(n_people=None,
@@ -113,7 +125,7 @@ def simulate(n_people=None,
              outfile=None, out_chunk_size=None,
              print_progress=False, seed=0, port=6688, n_jobs=1, other_monitors=[]):
     """
-    [summary]
+    Run the simualtion.
 
     Args:
         n_people ([type], optional): [description]. Defaults to None.
