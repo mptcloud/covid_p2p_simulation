@@ -11,7 +11,8 @@ from covid19sim.monitors import EventMonitor, TimeMonitor, SEIRMonitor
 from covid19sim.configs.exp_config import ExpConfig
 from covid19sim.configs.constants import TICK_MINUTE
 from covid19sim.utils import extract_tracker_data, dump_tracker_data
-
+import pathlib
+import dill
 
 @click.command()
 @click.option('--n_people', help='population of the city', type=int, default=100)

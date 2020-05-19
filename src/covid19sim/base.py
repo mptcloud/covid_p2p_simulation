@@ -1,5 +1,5 @@
 """
-[summary]
+Contains classes to construct a city.
 """
 import simpy
 import math
@@ -122,6 +122,10 @@ class City(simpy.Environment):
         self.last_date_to_check_tests = self.env.timestamp.date()
         self.test_count_today = defaultdict(int)
         self.test_type_preference = list(zip(*sorted(TEST_TYPES.items(), key=lambda x:x[1]['preference'])))[0]
+        self.max_capacity_per_test_type = {
+            test_type: max([int(TEST_TYPES[test_type]['capacity'] * self.n_people), 1])
+            for test_type in self.test_type_preference
+        }
         print("Initializing locations ...")
         self.initialize_locations()
 
@@ -194,7 +198,11 @@ class City(simpy.Environment):
             self.last_date_to_check_tests = self.env.timestamp.date()
             for k in self.test_count_today.keys():
                 self.test_count_today[k] = 0
-        return any(self.test_count_today[test_type] < TEST_TYPES[test_type]['capacity'] for test_type in self.test_type_preference)
+
+        return any(
+            self.test_count_today[test_type] < self.max_capacity_per_test_type[test_type]
+            for test_type in self.test_type_preference
+        )
 
     def get_available_test(self):
         """
@@ -207,7 +215,7 @@ class City(simpy.Environment):
             str: available test_type
         """
         for test_type in self.test_type_preference:
-            if self.test_count_today[test_type] < TEST_TYPES[test_type]['capacity']:
+            if self.test_count_today[test_type] < self.max_capacity_per_test_type[test_type]:
                 self.test_count_today[test_type] += 1
                 return test_type
 
