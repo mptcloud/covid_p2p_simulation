@@ -358,7 +358,7 @@ class City(simpy.Environment):
                 if cap - 1 > 0:
                     remaining_houses.append((res, cap-1))
 
-            # FIXME: there is some circular reference here
+            # FIXME: there is some ugly circular referencing here
             res.residents.append(human)
             human.assign_household(res)
             self.households.add(res)
