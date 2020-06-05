@@ -4,6 +4,7 @@ init_percent_sick: 0.00333
 test_capacity: 0.02
 COLD_CONTAGIOUSNESS: 0.0
 INTERVENTION_DAY: 5
+tune: true
 
 APP_UPTAKE:
   sample: cartesian
