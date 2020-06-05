@@ -1913,6 +1913,7 @@ def extract_tracker_data(tracker, conf):
     data['effective_contacts_all_days'] = tracker.compute_effective_contacts(since_intervention=False)
     data['humans_state'] = tracker.humans_state
     data['humans_rec_level'] = tracker.humans_rec_level
+    data['humans_has_app'] = dict((human.name, human.has_app) for human in tracker.city.humans)
     # data['dist_encounters'] = dict(tracker.dist_encounters)
     # data['time_encounters'] = dict(tracker.time_encounters)
     # data['day_encounters'] = dict(tracker.day_encounters)
