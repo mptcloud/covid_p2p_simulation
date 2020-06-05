@@ -1329,8 +1329,9 @@ class Human(object):
         while True:
             hour, day = self.env.hour_of_day(), self.env.day_of_week()
             if day==0:
-                self.count_exercise=0
-                self.count_shop=0
+                self.count_exercise = 0
+                self.count_shop = 0
+                self.count_misc = 0
 
             # recover from cold/flu/allergies if it's time
             self.recover_health()
@@ -1865,7 +1866,7 @@ class Human(object):
                          m != self.location]
             pool_locs = [m for m in city.miscs if m != self.location]
             # Only consider locations open for business and not too long queues
-            locs = filter_queue_max(filter_open(city.miscs), self.conf['MAX_MISC_QUEUE_LENGTH'])
+            locs = filter_queue_max(filter_open(city.miscs), self.conf.get("MAX_MISC_QUEUE_LENGTH"))
             visited_locs = self.visits.miscs
 
         else:
