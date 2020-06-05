@@ -1434,7 +1434,7 @@ class Human(object):
             elif ( self.env.is_weekend() and
                     self.rng.random() < 0.5 and
                     not self.rest_at_home and
-                    not self.count_misc<=self.max_misc_per_week):
+                    self.count_misc < self.max_misc_per_week):
                 yield  self.env.process(self.excursion(city, "leisure"))
 
             yield self.env.process(self.at(self.household, city, 60))
@@ -1865,7 +1865,7 @@ class Human(object):
                          m != self.location]
             pool_locs = [m for m in city.miscs if m != self.location]
             # Only consider locations open for business and not too long queues
-            locs = filter_queue_max(filter_open(city.miscs))
+            locs = filter_queue_max(filter_open(city.miscs), self.conf['MAX_MISC_QUEUE_LENGTH'])
             visited_locs = self.visits.miscs
 
         else:
