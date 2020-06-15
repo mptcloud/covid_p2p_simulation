@@ -211,7 +211,7 @@ def batch_run_timeslot_heavy_jobs(
         cluster_mgr_map = DummyMemManager.get_cluster_mgr_map()
         engine = DummyMemManager.get_engine(conf)
         results = proc_human_batch(all_params, engine, cluster_mgr_map)
-
+    assert len(results) > 0
     for name, risk_history in results:
         human = hd[name]
         if conf.get('RISK_MODEL') == "transformer":

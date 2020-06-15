@@ -351,6 +351,7 @@ def get_recommendations(level):
     Returns:
         list: a list of `BehaviorInterventions`.
     """
+    assert level in {0, 1, 2, 3}
     if level == 0:
         return [WashHands(), StandApart(default_distance=25)]
     if level == 1:
@@ -387,6 +388,7 @@ class RiskBasedRecommendations(BehaviorInterventions):
         Returns:
             recommendation level (int): App recommendation level which takes on a range of 0-3.
         """
+        assert human.has_app
         if human.risk_level <= thresholds[0]:
             return 0
         elif thresholds[0] < human.risk_level <= thresholds[1]:

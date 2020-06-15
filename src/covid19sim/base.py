@@ -25,6 +25,9 @@ if typing.TYPE_CHECKING:
 PersonalMailboxType = typing.Dict[UIDType, typing.List[UpdateMessage]]
 SimulatorMailboxType = typing.Dict[RealUserIDType, PersonalMailboxType]
 
+from unittest.mock import Mock
+logging = Mock()
+
 
 class Env(simpy.Environment):
     """
@@ -724,7 +727,8 @@ class City:
                 if current_day not in human.infectiousness_history_map:
                     # contrarily to risk, infectiousness only changes once a day (human behavior has no impact)
                     human.infectiousness_history_map[current_day] = calculate_average_infectiousness(human)
-
+                assert human.has_app or human._rec_level == -1, \
+                    f"human {human.name} has an app ({human.has_app}) but rec_level = {human._rec_level}"
                 if not human.has_app or self.env.timestamp.hour not in human.time_slots:
                     continue
                 human.initialize_daily_risk(current_day)
