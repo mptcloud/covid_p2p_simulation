@@ -700,7 +700,6 @@ class Tracing(object):
             self.delay = 1
             self.app = False
 
-
         self.propagate_risk_max_depth = max_depth
         # more than 3 will slow down the simulation too much
         if self.propagate_risk:
@@ -800,10 +799,8 @@ class Tracing(object):
         """
         assert self.risk_model != "transformer", "we should never be in here!"
         assert self.risk_model in ["manual", "digital", "naive", "heuristicv1", "heuristicv2", "other"], "missing something?"
-        if self.risk_model != "heuristic":
+        if self.risk_model in ['manual', 'digital']:
             t, s, r = self._get_hypothetical_contact_tracing_results(human, mailbox, humans_map)
-
-        if self.risk_model in ["manual", "digital"]:
             if t + s > 0:
                 risk = 1.0
             else:
