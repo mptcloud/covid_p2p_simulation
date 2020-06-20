@@ -375,7 +375,7 @@ class RiskBasedRecommendations(BehaviorInterventions):
         super(RiskBasedRecommendations, self).__init__()
 
     @staticmethod
-    def get_recommendations_level(human, thresholds, max_risk_level):
+    def get_recommendations_level(human, thresholds, max_risk_level, intervention_start=False):
         """
         Converts the risk level to recommendation level.
 
